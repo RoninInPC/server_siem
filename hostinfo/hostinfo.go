@@ -1,46 +1,34 @@
 package hostinfo
 
 import (
-	"github.com/shirou/gopsutil/host"
-	"net"
+	"encoding/json"
+	"server_siem/entity/subject"
+	"server_siem/hash"
 )
 
 type HostInfo struct {
 	HostName string
 	HostOS   string
+	Token    string
 	IPs      []string
 }
 
-var (
-	hostName string
-	hostOS   string
-	ips      []string
-)
-
-func HostInfoInit() {
-	info, _ := host.Info()
-	hostName = info.Hostname
-	hostOS = info.OS
-	ips, _ = getLocalIPs()
-}
-
-func getLocalIPs() ([]string, error) {
-	var ips []string
-	addresses, err := net.InterfaceAddrs()
+func (h HostInfo) JSON() string {
+	bytes, err := json.Marshal(h)
 	if err != nil {
-		return nil, err
+		return ""
 	}
-
-	for _, addr := range addresses {
-		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				ips = append(ips, ipnet.IP.String())
-			}
-		}
-	}
-	return ips, nil
+	return string(bytes)
 }
 
-func GetHostInfo() HostInfo {
-	return HostInfo{hostName, hostOS, ips}
+func (h HostInfo) Type() subject.SubjectType {
+	return subject.HostT
+}
+
+func (h HostInfo) Name() string {
+	return h.HostName
+}
+
+func (h HostInfo) Hash(hash hash.Hash) string {
+	return hash(h.JSON())
 }

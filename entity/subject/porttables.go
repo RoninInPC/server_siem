@@ -9,24 +9,29 @@ import (
 )
 
 type SocketAddress struct {
-	IP   net.IP
-	Port uint16
+	IP   net.IP `bson:"socket_ip"`
+	Port uint16 `bson:"socket_port"`
 }
 
 type Protocol struct {
-	Name string
-	Path string
+	Name string `bson:"protocol_name"`
+	Path string `bson:"protocol_path"`
+}
+
+type LocalRemote struct {
+	LocalAddress  string           `bson:"local_address"`
+	RemoteAddress *SocketAddress   `bson:"remote_address"`
+	State         netstat.TCPState `bson:"state"`
+	UserId        string           `bson:"user_id"`
+	PID           string           `bson:"pid"`
+	Protocol      Protocol         `bson:"protocol"`
+	TransmitQueue uint64
+	ReceiveQueue  uint64
 }
 
 type PortTables struct {
-	LocalAddress  *SocketAddress
-	RemoteAddress *SocketAddress
-	State         netstat.TCPState
-	UserId        string
-	PID           string
-	Protocol      Protocol
-	TransmitQueue uint64
-	ReceiveQueue  uint64
+	Port         uint64        `bson:"port"`
+	LocalRemotes []LocalRemote `bson:"remotes_config"`
 }
 
 func (portTables PortTables) JSON() string {
@@ -42,7 +47,7 @@ func (portTables PortTables) Type() SubjectType {
 }
 
 func (portTables PortTables) Name() string {
-	return portTables.LocalAddress.IP.String() + strconv.Itoa(int(portTables.LocalAddress.Port))
+	return strconv.Itoa(int(portTables.Port))
 }
 
 func (portTables PortTables) Hash(hash hash.Hash) string {

@@ -7,10 +7,11 @@ import (
 )
 
 type File struct {
-	FullName string
-	Size     int64
-	Mode     string
-	Modified time.Time
+	FullName string    `bson:"filename"`
+	Content  []byte    `bson:"content"`
+	Size     int64     `bson:"filesize"`
+	Mode     string    `bson:"mode"`
+	Modified time.Time `bson:"mod_time"`
 }
 
 func (file File) JSON() string {

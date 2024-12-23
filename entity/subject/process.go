@@ -7,17 +7,17 @@ import (
 )
 
 type Process struct {
-	PID           string
-	UID           string
-	Nice          int32
-	IsRunning     bool
-	IsBackGround  bool
-	CreateTime    time.Time
-	Status        []string
-	NameProcess   string
-	CMDLine       string
-	PercentCPU    float64
-	PercentMemory float32
+	PID           string    `bson:"pid"`
+	UID           string    `bson:"uid"`
+	Nice          int32     `bson:"nice"`
+	IsRunning     bool      `bson:"is_running"`
+	IsBackGround  bool      `bson:"is_background"`
+	CreateTime    time.Time `bson:"create_time"`
+	Status        []string  `bson:"statuses"`
+	NameProcess   string    `bson:"name_process"`
+	CMDLine       string    `bson:"cmdline"`
+	PercentCPU    float64   `bson:"percent_cpu"`
+	PercentMemory float32   `bson:"percent_memory"`
 }
 
 func (process Process) JSON() string {

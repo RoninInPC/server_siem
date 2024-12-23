@@ -6,11 +6,11 @@ import (
 )
 
 type User struct {
-	Uid        string
-	Gid        string
-	Username   string
-	SimpleName string
-	HomeDir    string
+	Uid        string `bson:"uid"`
+	Gid        string `bson:"gid"`
+	Username   string `bson:"username"`
+	SimpleName string `bson:"simple_name"`
+	HomeDir    string `bson:"home_dir"`
 }
 
 func (user User) JSON() string {
