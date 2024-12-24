@@ -29,3 +29,9 @@ func (n NotificationProcessEnd) Type() subject.SubjectType {
 func (n NotificationProcessEnd) Hash(hash hash.Hash) string {
 	return hash(n.JSON())
 }
+
+func NotificationProcessEndFromJSON(jsoned string) (NotificationProcessEnd, error) {
+	var end NotificationProcessEnd
+	err := json.Unmarshal([]byte(jsoned), &end)
+	return end, err
+}

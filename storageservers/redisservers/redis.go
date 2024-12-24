@@ -26,11 +26,11 @@ func (s RedisDB) Add(info hostinfo.HostInfo, host storageservers.TypeHost) bool 
 }
 
 func (s RedisDB) Exists(info hostinfo.HostInfo) (storageservers.TypeHost, bool) {
-	b := s.client.HGet(string(storageservers.Server), info.HostName).String() == info.JSON()
+	b := s.client.HGet(string(storageservers.Server), info.HostName).String() != ""
 	if b {
 		return storageservers.Server, b
 	}
-	b1 := s.client.HGet(string(storageservers.Receiver), info.HostName).String() == info.JSON()
+	b1 := s.client.HGet(string(storageservers.Receiver), info.HostName).String() != ""
 	if b1 {
 		return storageservers.Receiver, b
 	}
@@ -55,4 +55,16 @@ func (s RedisDB) Delete(info hostinfo.HostInfo) bool {
 
 func (s RedisDB) GetType(host storageservers.TypeHost) []string {
 	return s.client.HKeys(string(host)).Val()
+}
+
+func (s RedisDB) Compare(info hostinfo.HostInfo) (storageservers.TypeHost, bool) {
+	b := s.client.HGet(string(storageservers.Server), info.HostName).String() == info.Hash(s.hash)
+	if b {
+		return storageservers.Server, b
+	}
+	b1 := s.client.HGet(string(storageservers.Receiver), info.HostName).String() == info.Hash(s.hash)
+	if b1 {
+		return storageservers.Receiver, b
+	}
+	return storageservers.Nope, false
 }

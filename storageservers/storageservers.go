@@ -16,4 +16,5 @@ type StorageServers interface {
 	Update(hostinfo.HostInfo) bool
 	Delete(hostinfo.HostInfo) bool
 	GetType(TypeHost) []string
+	Compare(hostinfo.HostInfo) (TypeHost, bool)
 }
