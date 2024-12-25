@@ -3,6 +3,9 @@ package service
 import (
 	"server_siem/api"
 	"server_siem/command"
+	"server_siem/storagepids"
+	"server_siem/storageservers"
+	"server_siem/storagesubject"
 )
 
 type Method int
@@ -18,6 +21,7 @@ var (
 )
 
 type PathWork struct {
+	Method Method
 	Path   string
 	Action command.Action
 }
@@ -25,29 +29,42 @@ type PathWork struct {
 type ApiService struct {
 	Address  string
 	API      api.Api
-	Commands map[Method]PathWork
+	Commands []PathWork
+}
+
+func InitApiService(address string,
+	ds storagepids.StoragePIDs,
+	servers storageservers.StorageServers,
+	subjects storagesubject.StorageSubjects) ApiService {
+	post := command.Post{ds, servers, subjects}
+	return ApiService{API: api.InitApi(), Address: address, Commands: []PathWork{
+		{POST, "/api/command", command.PostCommand{post}},
+		{POST, "/api/server", post},
+		{PATCH, "/api/server", command.Update{post}},
+		{DELETE, "api/server", command.Delete{post}},
+	}}
 }
 
 func (a ApiService) Work() {
 	if &a != nil {
 		a.API = api.InitApi()
 	}
-	for method, work := range a.Commands {
-		switch method {
+	for _, c := range a.Commands {
+		switch c.Method {
 		case POST:
-			a.API.Post(work.Path, work.Action)
+			a.API.Post(c.Path, c.Action)
 		case GET:
-			a.API.Get(work.Path, work.Action)
+			a.API.Get(c.Path, c.Action)
 		case HEAD:
-			a.API.Head(work.Path, work.Action)
+			a.API.Head(c.Path, c.Action)
 		case OPTIONS:
-			a.API.Options(work.Path, work.Action)
+			a.API.Options(c.Path, c.Action)
 		case PATCH:
-			a.API.Patch(work.Path, work.Action)
+			a.API.Patch(c.Path, c.Action)
 		case PUT:
-			a.API.Patch(work.Path, work.Action)
+			a.API.Patch(c.Path, c.Action)
 		case DELETE:
-			a.API.Delete(work.Path, work.Action)
+			a.API.Delete(c.Path, c.Action)
 		default:
 			continue
 		}

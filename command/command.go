@@ -100,7 +100,12 @@ func (u Delete) Action(g *gin.Context) {
 		if g.RemoteIP() == ip {
 			switch m.TypeMessage {
 			case "delete":
+				sub := mapper.JSONtoSubject(m.Json, m.TypeSubject)
 				if _, compare := u.Servers.Compare(h); compare {
+					if h.Type() == subject.ProcessT {
+						pr := sub.(subject.Process)
+						u.PIDs.DeletePID(m.HostName, pr.PID)
+					}
 					u.Subjects.Delete(mapper.JSONtoSubject(m.Json, m.TypeSubject))
 				}
 				break
@@ -109,7 +114,25 @@ func (u Delete) Action(g *gin.Context) {
 	}
 }
 
-type PostPID interface {
+type PostCommand struct {
+	Post
+}
+
+func (p PostCommand) Action(g *gin.Context) {
+	m := ContextToMessage(g)
+	h := MessageToHostInfo(m)
+	for _, ip := range h.IPs {
+		if g.RemoteIP() == ip {
+			switch m.TypeMessage {
+			case "new_pid":
+				break
+			case "delete_pid":
+				break
+			case "new_temporal_pid":
+				break
+			}
+		}
+	}
 }
 
 func ContextToMessage(g *gin.Context) subject.Message {
