@@ -10,6 +10,7 @@ type HostInfo struct {
 	HostName string
 	HostOS   string
 	Token    string
+	CodeName string
 	IPs      []string
 }
 

@@ -40,6 +40,7 @@ func (a Post) Action(g *gin.Context) {
 				break
 			case "init_receiver":
 				token := token.MakeToken(&h)
+				h.CodeName = m.Message
 				a.Servers.Add(h, storageservers.Receiver)
 				g.JSON(http.StatusOK, gin.H{
 					"token": token,

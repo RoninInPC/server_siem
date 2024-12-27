@@ -41,7 +41,7 @@ func InitApiService(address string,
 		{POST, "/api/command", command.PostCommand{post}},
 		{POST, "/api/server", post},
 		{PATCH, "/api/server", command.Update{post}},
-		{DELETE, "api/server", command.Delete{post}},
+		{DELETE, "/api/server", command.Delete{post}},
 	}}
 }
 
