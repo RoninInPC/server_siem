@@ -3,8 +3,9 @@ package storagesubject
 import "server_siem/entity/subject"
 
 type StorageSubjects interface {
-	Add(subject.Subject) bool
-	Update(subject.Subject) bool
-	Get(subject.Subject) subject.Subject
-	Delete(subject.Subject) bool
+	ClearDatabase(host string) bool
+	Add(string, subject.Subject) bool
+	Update(string, subject.Subject) bool
+	Get(string, subject.Subject) subject.Subject
+	Delete(string, subject.Subject) bool
 }

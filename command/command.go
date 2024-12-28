@@ -34,6 +34,7 @@ func (a Post) Action(g *gin.Context) {
 			case "init_server":
 				token := token.MakeToken(&h)
 				a.Servers.Add(h, storageservers.Server)
+				a.Subjects.ClearDatabase(h.HostName)
 				g.JSON(http.StatusOK, gin.H{
 					"token": token,
 				})
@@ -48,7 +49,7 @@ func (a Post) Action(g *gin.Context) {
 				break
 			case "init":
 				if _, compare := a.Servers.Compare(h); compare {
-					a.Subjects.Add(mapper.JSONtoSubject(m.Json, m.TypeSubject))
+					a.Subjects.Add(h.HostName, mapper.JSONtoSubject(m.Json, m.TypeSubject))
 				}
 				break
 			case "new":
@@ -58,7 +59,7 @@ func (a Post) Action(g *gin.Context) {
 						pr := sub.(subject.Process)
 						a.PIDs.AddTemporalPID(m.HostName, pr.PID, time.Minute*10)
 					}
-					a.Subjects.Add(sub)
+					a.Subjects.Add(h.HostName, sub)
 				}
 				break
 			case "syscall":
@@ -82,7 +83,7 @@ func (u Update) Action(g *gin.Context) {
 			switch m.TypeMessage {
 			case "update":
 				if _, compare := u.Servers.Compare(h); compare {
-					u.Subjects.Update(mapper.JSONtoSubject(m.Json, m.TypeSubject))
+					u.Subjects.Update(h.HostName, mapper.JSONtoSubject(m.Json, m.TypeSubject))
 				}
 				break
 			}
@@ -107,7 +108,7 @@ func (u Delete) Action(g *gin.Context) {
 						pr := sub.(subject.Process)
 						u.PIDs.DeletePID(m.HostName, pr.PID)
 					}
-					u.Subjects.Delete(mapper.JSONtoSubject(m.Json, m.TypeSubject))
+					u.Subjects.Delete(h.HostName, mapper.JSONtoSubject(m.Json, m.TypeSubject))
 				}
 				break
 			}
