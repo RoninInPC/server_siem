@@ -1,6 +1,7 @@
 package redisservers
 
 import (
+	"encoding/json"
 	red "github.com/go-redis/redis"
 	"server_siem/hash"
 	"server_siem/hostinfo"
@@ -23,6 +24,13 @@ func Init(address string, passwd string, db int, h hash.Hash) RedisDB {
 
 func (s RedisDB) Add(info hostinfo.HostInfo, host storageservers.TypeHost) bool {
 	return nil == s.client.HSet(string(host), info.HostName, info.JSON())
+}
+
+func (s RedisDB) Get(host storageservers.TypeHost, hostname string) hostinfo.HostInfo {
+	b, _ := s.client.HGet(string(host), hostname).Bytes()
+	answer := hostinfo.HostInfo{}
+	json.Unmarshal(b, &answer)
+	return answer
 }
 
 func (s RedisDB) Exists(info hostinfo.HostInfo) (storageservers.TypeHost, bool) {

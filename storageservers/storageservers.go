@@ -11,7 +11,8 @@ var (
 )
 
 type StorageServers interface {
-	Add(hostinfo.HostInfo, TypeHost) bool
+	Add(hostinfo.HostInfo, TypeHost)
+	Get(TypeHost, string) hostinfo.HostInfo
 	Exists(hostinfo.HostInfo) (TypeHost, bool)
 	Update(hostinfo.HostInfo) bool
 	Delete(hostinfo.HostInfo) bool

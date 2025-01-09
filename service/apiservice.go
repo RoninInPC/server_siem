@@ -3,6 +3,7 @@ package service
 import (
 	"server_siem/api"
 	"server_siem/command"
+	"server_siem/entity/subject/notification/receivernotification"
 	"server_siem/storagepids"
 	"server_siem/storageservers"
 	"server_siem/storagesubject"
@@ -35,8 +36,10 @@ type ApiService struct {
 func InitApiService(address string,
 	ds storagepids.StoragePIDs,
 	servers storageservers.StorageServers,
-	subjects storagesubject.StorageSubjects) ApiService {
-	post := command.Post{ds, servers, subjects}
+	subjects storagesubject.StorageSubjects,
+	channel chan receivernotification.Notification,
+) ApiService {
+	post := command.Post{ds, servers, subjects, channel}
 	return ApiService{API: api.InitApi(), Address: address, Commands: []PathWork{
 		{POST, "/api/command", command.PostCommand{post}},
 		{POST, "/api/server", post},

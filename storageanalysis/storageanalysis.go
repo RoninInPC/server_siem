@@ -1,15 +1,28 @@
 package storageanalysis
 
-import "server_siem/entity/subject"
+import (
+	"server_siem/entity/subject/notification/receivernotification"
+)
 
-type AddAnalysis struct {
-	HostName string
-	PID      string
-	Subject  subject.Subject
+type AddAnalysis receivernotification.Notification
+
+type ArrAddAnalysis []AddAnalysis
+
+func (a ArrAddAnalysis) Len() int {
+	return len(a)
+}
+
+func (a ArrAddAnalysis) Less(i, j int) bool {
+	return a[i].GetTime().Before(a[j].GetTime())
+}
+
+func (a ArrAddAnalysis) Swap(i, j int) {
+	cop := a[i]
+	a[i] = a[j]
+	a[j] = cop
 }
 
 type StorageAnalysis interface {
-	Add(string, string, AddAnalysis) bool
-	Get(string, string) AddAnalysis
-	Del(string, string) bool
+	Add(AddAnalysis) bool
+	GetAllAndDelete() ArrAddAnalysis
 }

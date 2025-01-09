@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"server_siem/entity/subject"
+	"server_siem/entity/subject/notification/receivernotification"
 	"server_siem/hostinfo"
 	"server_siem/mapper"
 	"server_siem/storagepids"
@@ -22,6 +23,7 @@ type Post struct {
 	PIDs     storagepids.StoragePIDs
 	Servers  storageservers.StorageServers
 	Subjects storagesubject.StorageSubjects
+	Channel  chan receivernotification.Notification
 }
 
 func (a Post) Action(g *gin.Context) {
@@ -59,11 +61,16 @@ func (a Post) Action(g *gin.Context) {
 						pr := sub.(subject.Process)
 						a.PIDs.AddTemporalPID(m.HostName, pr.PID, time.Minute*10)
 					}
+					a.PostInChannel("new", sub, h, m.Username, m.PID, m.Time)
 					a.Subjects.Add(h.HostName, sub)
 				}
 				break
 			case "syscall":
+				sub := mapper.JSONtoSubject(m.Json, m.TypeSubject)
 				if _, compare := a.Servers.Compare(h); compare {
+					if a.PIDs.Contains(h.HostName, m.PID) {
+						a.PostInChannel("syscall", sub, h, m.Username, m.PID, m.Time)
+					}
 				}
 				break
 			}
@@ -83,7 +90,11 @@ func (u Update) Action(g *gin.Context) {
 			switch m.TypeMessage {
 			case "update":
 				if _, compare := u.Servers.Compare(h); compare {
-					u.Subjects.Update(h.HostName, mapper.JSONtoSubject(m.Json, m.TypeSubject))
+					sub := mapper.JSONtoSubject(m.Json, m.TypeSubject)
+					if u.PIDs.Contains(h.HostName, m.PID) {
+						u.PostInChannel("update", sub, h, m.Username, m.PID, m.Time)
+					}
+					u.Subjects.Update(h.HostName, sub)
 				}
 				break
 			}
@@ -108,6 +119,9 @@ func (u Delete) Action(g *gin.Context) {
 						pr := sub.(subject.Process)
 						u.PIDs.DeletePID(m.HostName, pr.PID)
 					}
+
+					u.PostInChannel("delete", sub, h, m.Username, m.PID, m.Time)
+
 					u.Subjects.Delete(h.HostName, mapper.JSONtoSubject(m.Json, m.TypeSubject))
 				}
 				break
@@ -150,4 +164,105 @@ func MessageToHostInfo(s subject.Message) hostinfo.HostInfo {
 		HostOS:   s.SystemOS,
 		IPs:      s.HostIP,
 	}
+}
+
+func (p Post) PostInChannel(tag string, sub subject.Subject, info hostinfo.HostInfo, username, pid string, t time.Time) bool {
+	who := p.Subjects.Get(info.HostName, subject.User{Username: username}).(subject.User)
+	whoProcess := p.Subjects.Get(info.HostName, subject.Process{PID: pid}).(subject.Process)
+	base := receivernotification.BaseNotification{Host: info, Time: t, Who: &who, WhoProcess: &whoProcess}
+	switch tag {
+	case "new":
+		switch sub.Type() {
+		case subject.ProcessT:
+			p.Channel <- receivernotification.ProcessNew{
+				Process:          sub.(subject.Process),
+				BaseNotification: base}
+			return true
+		case subject.FileT:
+			p.Channel <- receivernotification.FileNew{
+				File:             sub.(subject.File),
+				BaseNotification: base,
+			}
+			return true
+		case subject.UserT:
+			p.Channel <- receivernotification.UserNew{
+				User:             sub.(subject.User),
+				BaseNotification: base,
+			}
+			return true
+		case subject.PortTablesT:
+			p.Channel <- receivernotification.PortNew{
+				Port:             sub.(subject.PortTables),
+				BaseNotification: base,
+			}
+			return true
+		}
+		break
+	case "delete":
+		switch sub.Type() {
+		case subject.ProcessT:
+			p.Channel <- receivernotification.ProcessDelete{
+				Process:          sub.(subject.Process),
+				BaseNotification: base}
+			return true
+		case subject.FileT:
+			p.Channel <- receivernotification.FileDelete{
+				File:             sub.(subject.File),
+				BaseNotification: base,
+			}
+			return true
+		case subject.UserT:
+			p.Channel <- receivernotification.UserDelete{
+				User:             sub.(subject.User),
+				BaseNotification: base,
+			}
+			return true
+		case subject.PortTablesT:
+			p.Channel <- receivernotification.PortDelete{
+				Port:             sub.(subject.PortTables),
+				BaseNotification: base,
+			}
+			return true
+		}
+		break
+	case "update":
+		subBefore := p.Subjects.Get(info.HostName, sub)
+		switch sub.Type() {
+		case subject.ProcessT:
+			p.Channel <- receivernotification.ProcessUpdate{
+				ProcessBefore:    subBefore.(subject.Process),
+				ProcessAfter:     sub.(subject.Process),
+				BaseNotification: base}
+			return true
+		case subject.FileT:
+			p.Channel <- receivernotification.FileUpdate{
+				FileBefore:       subBefore.(subject.File),
+				FileAfter:        sub.(subject.File),
+				BaseNotification: base,
+			}
+			return true
+		case subject.UserT:
+			p.Channel <- receivernotification.UserUpdate{
+				UserBefore:       subBefore.(subject.User),
+				UserAfter:        sub.(subject.User),
+				BaseNotification: base,
+			}
+			return true
+		case subject.PortTablesT:
+			p.Channel <- receivernotification.PortUpdate{
+				PortBefore:       subBefore.(subject.PortTables),
+				PortAfter:        sub.(subject.PortTables),
+				BaseNotification: base,
+			}
+			return true
+		}
+		break
+	case "syscall":
+		p.Channel <- receivernotification.Syscall{
+			Syscall:          sub.(subject.Syscall),
+			BaseNotification: base,
+		}
+		return true
+	}
+	return false
 }

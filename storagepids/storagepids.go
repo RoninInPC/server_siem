@@ -3,6 +3,7 @@ package storagepids
 import "time"
 
 type StoragePIDs interface {
+	Contains(string, string) bool
 	AddTemporalPID(string, string, time.Duration) bool
 	AddPID(string, string) bool
 	DeletePID(string, string) bool

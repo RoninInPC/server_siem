@@ -23,6 +23,19 @@ func Init(address string, passwd string, db int) RedisDB {
 	return RedisDB{client: client}
 }
 
+func (r RedisDB) Contains(host, pid string) bool {
+	b := r.client.HGet(host+Temporal, pid).Err() != nil
+	b1 := r.client.HGet(host+NotTemporal, pid).Err() != nil
+	if !b && !b1 {
+		return false
+	}
+	if r.client.HGet(host+NotTemporal, pid).String() < time.Now().String() {
+		r.DeleteTemporalPID(host, pid)
+		return false
+	}
+	return true
+}
+
 func (r RedisDB) AddTemporalPID(host string, pid string, d time.Duration) bool {
 	return r.client.HSet(host+Temporal, pid, time.Now().Add(d).String()).Err() == nil
 }
