@@ -5,15 +5,13 @@ import (
 )
 
 type JWTSender struct {
-	HostServer string
-	methods    map[string]CommandJWT
+	methods map[string]CommandJWT
 }
 
-func InitJWTSender(hostSubject string) *JWTSender {
-	return &JWTSender{HostServer: hostSubject,
-		methods: map[string]CommandJWT{
-			"send_receiver": CommandJWTPostForm{},
-		}}
+func InitJWTSender() *JWTSender {
+	return &JWTSender{methods: map[string]CommandJWT{
+		"send_receiver": CommandJWTPostForm{},
+	}}
 }
 
 func (j *JWTSender) Send(address string, message subject.Message) bool {

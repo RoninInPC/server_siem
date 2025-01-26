@@ -1,4 +1,4 @@
-package redissubject
+package redispids
 
 import (
 	red "github.com/go-redis/redis"

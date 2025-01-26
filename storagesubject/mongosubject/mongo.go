@@ -17,15 +17,15 @@ type MongoDB struct {
 	Password string
 }
 
-func Init(Address string, Username string, Password string) (*MongoDB, error) {
+func Init(Address string, Username string, Password string) MongoDB {
 	m, err := mongo.Connect(options.Client().ApplyURI(fmt.Sprintf("mongodb://%s", Address)).
 		SetAuth(options.Credential{
 			Username: Username,
 			Password: Password}))
 	if err != nil {
-		return nil, err
+		return MongoDB{}
 	}
-	return &MongoDB{client: m, ctx: context.TODO(), Address: Address, Username: Username, Password: Password}, nil
+	return MongoDB{client: m, ctx: context.TODO(), Address: Address, Username: Username, Password: Password}
 }
 
 var subjectMap = map[subject.SubjectType]string{

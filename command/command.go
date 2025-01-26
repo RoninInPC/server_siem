@@ -3,6 +3,8 @@ package command
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"io"
+	"log"
 	"net/http"
 	"server_siem/entity/subject"
 	"server_siem/entity/subject/notification/receivernotification"
@@ -12,6 +14,7 @@ import (
 	"server_siem/storageservers"
 	"server_siem/storagesubject"
 	"server_siem/token"
+	"strings"
 	"time"
 )
 
@@ -152,9 +155,19 @@ func (p PostCommand) Action(g *gin.Context) {
 }
 
 func ContextToMessage(g *gin.Context) subject.Message {
-	j := g.Param("json")
+	request := g.Request
+	body, _ := io.ReadAll(request.Body)
+	defer request.Body.Close()
+	log.Println(string(body))
+	jsoned := string(body)
+	jsoned = strings.Replace(jsoned, "%7B", "{", -1)
+	jsoned = strings.Replace(jsoned, "%22", "\"", -1)
+	jsoned = strings.Replace(jsoned, "%3A", ":", -1)
+	jsoned = strings.Replace(jsoned, "%2C", ",", -1)
+	jsoned = strings.Replace(jsoned, "%7D", "}", -1)
+	jsoned = strings.Replace(jsoned, "json=", "", -1)
 	m := subject.Message{}
-	json.Unmarshal([]byte(j), &m)
+	json.Unmarshal([]byte(jsoned), &m)
 	return m
 }
 
