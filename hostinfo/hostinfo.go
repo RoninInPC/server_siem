@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/shirou/gopsutil/host"
 	"net"
-	"server_siem/entity/subject"
 	"server_siem/hash"
 )
 
@@ -22,10 +21,6 @@ func (h HostInfo) JSON() string {
 		return ""
 	}
 	return string(bytes)
-}
-
-func (h HostInfo) Type() subject.SubjectType {
-	return subject.HostT
 }
 
 func (h HostInfo) Name() string {

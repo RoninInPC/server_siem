@@ -4,6 +4,7 @@ import (
 	"server_siem/config"
 	"server_siem/entity/subject/notification/receivernotification"
 	"server_siem/hash"
+	"server_siem/hostinfo"
 	"server_siem/sender"
 	"server_siem/service/analysis"
 	"server_siem/storageanalysis/mapanalysis"
@@ -19,19 +20,23 @@ type Program struct {
 }
 
 func InitProgram(fileName string) *Program {
+	hostinfo.HostInfoInit()
 	conf, err := config.ReadFromFile(fileName)
 	if err != nil {
 		panic(err)
 	}
+
 	redisPIDs := redispids.Init(conf.RedisPIDs.Address, conf.RedisPIDs.Password, conf.RedisPIDs.DB)
 	redisServers := redisservers.Init(conf.RedisServers.Address, conf.RedisServers.Password, conf.RedisServers.DB, hash.ToMD5)
 	mongoSubjects := mongosubject.Init(conf.MongoSubject.Address, conf.MongoSubject.Username, conf.MongoSubject.Password)
 	notChannel := make(chan receivernotification.Notification)
+
 	apiService := InitApiService(conf.Server.AddressUp,
 		redisPIDs,
 		redisServers,
 		mongoSubjects,
 		notChannel)
+
 	storageAnalysis := mapanalysis.Init()
 	analysisService := analysis.AnalysisService{
 		Storage:         storageAnalysis,
@@ -45,6 +50,6 @@ func InitProgram(fileName string) *Program {
 }
 
 func (p *Program) Work() {
-	go p.AnalysisService.Work()
+	go p.ApiService.Work()
 	p.AnalysisService.Work()
 }

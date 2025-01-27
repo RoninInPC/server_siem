@@ -20,7 +20,7 @@ type Config struct {
 		Address  string `ini:"address"`
 		Username string `ini:"username"`
 		Password string `ini:"password"`
-	}
+	} `ini:"mongo_subject"`
 }
 
 func ReadFromFile(fileName string) (Config, error) {

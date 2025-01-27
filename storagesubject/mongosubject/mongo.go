@@ -146,3 +146,15 @@ func (m MongoDB) Get(host string, sub subject.Subject) subject.Subject {
 
 	}
 }
+
+func (m MongoDB) GetHosts() []string {
+	list, err := m.client.ListDatabases(m.ctx, nil)
+	answer := make([]string, len(list.Databases))
+	if err != nil {
+		return answer
+	}
+	for i, l := range list.Databases {
+		answer[i] = l.Name
+	}
+	return answer
+}

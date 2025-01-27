@@ -60,7 +60,7 @@ func (a Post) Action(g *gin.Context) {
 			case "new":
 				sub := mapper.JSONtoSubject(m.Json, m.TypeSubject)
 				if _, compare := a.Servers.Compare(h); compare {
-					if h.Type() == subject.ProcessT {
+					if sub.Type() == subject.ProcessT {
 						pr := sub.(subject.Process)
 						a.PIDs.AddTemporalPID(m.HostName, pr.PID, time.Minute*10)
 					}
@@ -118,7 +118,7 @@ func (u Delete) Action(g *gin.Context) {
 			case "delete":
 				sub := mapper.JSONtoSubject(m.Json, m.TypeSubject)
 				if _, compare := u.Servers.Compare(h); compare {
-					if h.Type() == subject.ProcessT {
+					if sub.Type() == subject.ProcessT {
 						pr := sub.(subject.Process)
 						u.PIDs.DeletePID(m.HostName, pr.PID)
 					}
@@ -149,6 +149,8 @@ func (p PostCommand) Action(g *gin.Context) {
 				break
 			case "new_temporal_pid":
 				break
+			case "get_hosts":
+				break
 			}
 		}
 	}
@@ -161,10 +163,12 @@ func ContextToMessage(g *gin.Context) subject.Message {
 	log.Println(string(body))
 	jsoned := string(body)
 	jsoned = strings.Replace(jsoned, "%7B", "{", -1)
+	jsoned = strings.Replace(jsoned, "%5B", "[", -1)
 	jsoned = strings.Replace(jsoned, "%22", "\"", -1)
 	jsoned = strings.Replace(jsoned, "%3A", ":", -1)
 	jsoned = strings.Replace(jsoned, "%2C", ",", -1)
 	jsoned = strings.Replace(jsoned, "%7D", "}", -1)
+	jsoned = strings.Replace(jsoned, "%5D", "]", -1)
 	jsoned = strings.Replace(jsoned, "json=", "", -1)
 	m := subject.Message{}
 	json.Unmarshal([]byte(jsoned), &m)

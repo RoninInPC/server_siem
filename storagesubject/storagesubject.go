@@ -8,4 +8,5 @@ type StorageSubjects interface {
 	Update(string, subject.Subject) bool
 	Get(string, subject.Subject) subject.Subject
 	Delete(string, subject.Subject) bool
+	GetHosts() []string
 }
