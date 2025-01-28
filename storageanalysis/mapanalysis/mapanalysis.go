@@ -15,14 +15,14 @@ func Init() *MapAnalysis {
 	return &MapAnalysis{local: make([]storageanalysis.AddAnalysis, 0)}
 }
 
-func (m MapAnalysis) Add(analysis storageanalysis.AddAnalysis) bool {
+func (m *MapAnalysis) Add(analysis storageanalysis.AddAnalysis) bool {
 	m.Lock()
 	defer m.Unlock()
 	m.local = append(m.local, analysis)
 	return true
 }
 
-func (m MapAnalysis) GetAllAndDelete() storageanalysis.ArrAddAnalysis {
+func (m *MapAnalysis) GetAllAndDelete() storageanalysis.ArrAddAnalysis {
 	m.Lock()
 	defer m.Unlock()
 	answer := slices.Clone(m.local)

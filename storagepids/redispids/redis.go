@@ -26,7 +26,7 @@ func Init(address string, passwd string, db int) RedisDB {
 func (r RedisDB) Contains(host, pid string) bool {
 	b := r.client.HGet(host+Temporal, pid).Err() != nil
 	b1 := r.client.HGet(host+NotTemporal, pid).Err() != nil
-	if !b && !b1 {
+	if b && b1 {
 		return false
 	}
 	if r.client.HGet(host+NotTemporal, pid).String() < time.Now().String() {

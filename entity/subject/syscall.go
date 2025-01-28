@@ -2,6 +2,7 @@ package subject
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/RoninInPC/gosyscalltrace"
 	"server_siem/hash"
 )
@@ -34,5 +35,6 @@ func (m Syscall) Hash(hash hash.Hash) string {
 func SyscallFromJSON(jsoned string) (Syscall, error) {
 	var syscall Syscall
 	err := json.Unmarshal([]byte(jsoned), &syscall)
+	fmt.Println(syscall)
 	return syscall, err
 }

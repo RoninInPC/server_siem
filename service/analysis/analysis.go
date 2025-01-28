@@ -36,10 +36,10 @@ func (a AnalysisService) Work() {
 		all := a.Storage.GetAllAndDelete()
 		sort.Sort(all)
 		for _, receiver := range a.StorageServers.GetType(storageservers.Receiver) {
+			sendHost := a.StorageServers.Get(storageservers.Receiver, receiver)
 			for _, info := range all {
-				codeName := a.StorageServers.Get(storageservers.Receiver, receiver).CodeName
-				a.Sender.Send(MakeAddressHost(receiver, codeName+"/api/alert"), subject.InitMessage(
-					"",
+				a.Sender.Send(MakeAddressHost(receiver+":"+sendHost.CodeName, "/api/alert"), subject.InitMessage(
+					sendHost.Token,
 					"send_receiver",
 					"send_receiver",
 					hostinfo.GetHostInfo(),
@@ -53,5 +53,5 @@ func (a AnalysisService) Work() {
 }
 
 func MakeAddressHost(address, specifically string) string {
-	return "https://" + address + "/" + specifically
+	return "http://" + address + specifically
 }

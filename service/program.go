@@ -44,7 +44,7 @@ func InitProgram(fileName string) *Program {
 		StorageSubjects: mongoSubjects,
 		Sender:          sender.InitJWTSender(),
 		Channel:         notChannel,
-		Duration:        time.Minute * 10,
+		Duration:        time.Minute * 2,
 	}
 	return &Program{apiService, analysisService}
 }

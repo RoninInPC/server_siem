@@ -66,11 +66,13 @@ func (s RedisDB) GetType(host storageservers.TypeHost) []string {
 }
 
 func (s RedisDB) Compare(info hostinfo.HostInfo) (storageservers.TypeHost, bool) {
-	b := s.client.HGet(string(storageservers.Server), info.HostName).String() == info.Hash(s.hash)
+	h := s.client.HGet(string(storageservers.Server), info.HostName).Val()
+	h1 := info.JSON()
+	b := h == h1
 	if b {
 		return storageservers.Server, b
 	}
-	b1 := s.client.HGet(string(storageservers.Receiver), info.HostName).String() == info.Hash(s.hash)
+	b1 := s.client.HGet(string(storageservers.Receiver), info.HostName).Val() == info.JSON()
 	if b1 {
 		return storageservers.Receiver, b
 	}

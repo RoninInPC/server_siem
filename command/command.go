@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"server_siem/entity/subject"
 	"server_siem/entity/subject/notification/receivernotification"
 	"server_siem/hostinfo"
@@ -162,21 +163,20 @@ func ContextToMessage(g *gin.Context) subject.Message {
 	defer request.Body.Close()
 	log.Println(string(body))
 	jsoned := string(body)
-	jsoned = strings.Replace(jsoned, "%7B", "{", -1)
-	jsoned = strings.Replace(jsoned, "%5B", "[", -1)
-	jsoned = strings.Replace(jsoned, "%22", "\"", -1)
-	jsoned = strings.Replace(jsoned, "%3A", ":", -1)
-	jsoned = strings.Replace(jsoned, "%2C", ",", -1)
-	jsoned = strings.Replace(jsoned, "%7D", "}", -1)
-	jsoned = strings.Replace(jsoned, "%5D", "]", -1)
+	jsoned, _ = url.QueryUnescape(jsoned)
+	//jsoned = strings.Replace(jsoned, "\\\"", "\"", -1)
 	jsoned = strings.Replace(jsoned, "json=", "", -1)
 	m := subject.Message{}
-	json.Unmarshal([]byte(jsoned), &m)
+	err := json.Unmarshal([]byte(jsoned), &m)
+	if err != nil {
+		log.Println(err.Error())
+	}
 	return m
 }
 
 func MessageToHostInfo(s subject.Message) hostinfo.HostInfo {
 	return hostinfo.HostInfo{
+		Token:    s.Token,
 		HostName: s.HostName,
 		HostOS:   s.SystemOS,
 		IPs:      s.HostIP,

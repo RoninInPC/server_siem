@@ -10,7 +10,7 @@ type Config struct {
 		Address  string `ini:"address"`
 		Password string `ini:"password"`
 		DB       int    `ini:"db"`
-	} `ini:"redis_subject"`
+	} `ini:"redis_servers"`
 	RedisPIDs struct {
 		Address  string `ini:"address"`
 		Password string `ini:"password"`

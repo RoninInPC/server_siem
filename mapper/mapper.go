@@ -3,9 +3,11 @@ package mapper
 import (
 	"server_siem/entity/subject"
 	"server_siem/entity/subject/notification"
+	"strings"
 )
 
 func JSONtoSubject(json string, subjectType subject.SubjectType) subject.Subject {
+	json = strings.Replace(json, "\\\"", "\"", -1)
 	switch subjectType {
 	case subject.FileT:
 		sub, _ := subject.FileFromJSON(json)
